@@ -1,0 +1,8 @@
+CEFR-J Wordlist Version 1.6
+Compiled by Yukio Tono, Tokyo University of Foreign Studies (Tono Laboratory).
+Official download: https://cefr-j.org/data/CEFRJ_wordlist_ver1.6.zip
+Project/resource page: https://cefr-j.org/download_eng
+Accessed: 2026-11-12
+
+This compact word/POS/CEFR subset is bundled for local vocabulary classification.
+CEFR-J levels are a reference indicator and do not assign a different level to each dictionary sense. The application groups dictionary senses by part of speech and displays the corresponding source level. Entries missing from the list remain unclassified.

@@ -1,0 +1,8 @@
+plugins { id "com.android.application"; id "com.chaquo.python" }
+android { namespace "com.ylsyatlas.mobile"; compileSdk 36; defaultConfig { applicationId "com.meliksahaviaton.ylsyatlas"; minSdk 24; targetSdk 35; ndk { abiFilters "arm64-v8a", "x86_64" }; versionCode 40000; versionName "4.0.0" } }
+dependencies { implementation "androidx.activity:activity:1.10.1" }
+chaquopy { defaultConfig { version = "3.11"; pip { install "google-auth>=2.30,<3"; install "google-api-python-client>=2.140,<3"; install "requests>=2.32,<3"; install "pypdf>=5,<7"; install "python-docx>=1.1,<2" } } }
+
+
+
+
