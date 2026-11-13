@@ -1,5 +1,5 @@
 'use strict';
-/* Google account screen and Drive status for YLSY Atlas 2.4.3.
+/* Google account screen and Drive status for YLSY Atlas 4.0.0.
    Keep the publisher OAuth client and existing authorization flow. */
 (() => {
   const TOKEN = new URL(location.href).searchParams.get('token') || '';
@@ -33,7 +33,7 @@
      `<button data-cloud="connect" class="cloud-button primary" ${info?.configured && info?.status!=='Google giriş sayfası açılıyor' ? '' : 'disabled'}>${info?.status==='Google giriş sayfası açılıyor' ? 'Google hesabı bekleniyor…' : info?.authorization_ready ? 'Google hesabını değiştir' : 'Google hesabını bağla'}</button>
       ${info?.authorization_ready?'<button data-cloud="folders" class="cloud-button primary">Google Drive klasörü seç</button>':''}
       ${info?.connected?'<button data-cloud="folders" class="cloud-button quiet">Yedekleme klasörünü değiştir</button><button data-cloud="disconnect" class="cloud-button quiet">Hesabın bağlantısını kaldır</button>':''}
-      ${startup?'<button data-cloud="skip" class="cloud-button quiet">Google hesabını bağlamadan devam et</button>':''}`+
+       ${startup&&!info?.connected?'<button data-cloud="skip" class="cloud-button quiet">Google hesabını bağlamadan devam et</button>':''}`+
       `<p class="cloud-note">${/Android/i.test(navigator.userAgent)?'Google hesabın güvenli sistem tarayıcısında açılır.':'Google hesabın varsayılan tarayıcıda güvenli Google giriş sayfasında açılır.'} Atlas parolanı istemez; bağlantı resmi Google OAuth akışını kullanır.</p>`);
     if(info?.error) message(info.error,true);
     else if(info && !info.configured) message('Google OAuth yapılandırması bulunamadı. Program yöneticisine bildirin.',true);
@@ -41,7 +41,8 @@
   async function folders(){
     view='folders';
     const where=folderStack.at(-1);
-    panel('Google Drive klasörü seç',`<p>${escapeHTML(folderStack.map(x=>x.name).join(' / '))}</p><div class="cloud-folder-list" id="cloud-folder-list">Klasörler alınıyor…</div><button data-cloud="back" class="cloud-button quiet" ${folderStack.length===1?'disabled':''}>Üst klasöre dön</button><button data-cloud="choose" class="cloud-button primary" disabled>Burada “YLSY Atlas” klasörü oluştur veya kullan</button>`);
+    const chooseLabel=where.name==='YLSY Atlas'?'Bu YLSY Atlas klasörünü kullan':'Burada “YLSY Atlas” klasörü oluştur veya kullan';
+    panel('Google Drive klasörü seç',`<p>${escapeHTML(folderStack.map(x=>x.name).join(' / '))}</p><div class="cloud-folder-list" id="cloud-folder-list">Klasörler alınıyor…</div><button data-cloud="back" class="cloud-button quiet" ${folderStack.length===1?'disabled':''}>Üst klasöre dön</button><button data-cloud="choose" class="cloud-button primary" disabled>${chooseLabel}</button>`);
     try{
       let items=await http('folders?parent='+encodeURIComponent(where.id));
       if(view!=='folders'||folderStack.at(-1).id!==where.id)return;
@@ -59,7 +60,7 @@
       const old=info;
       info=newest;
       // A completed Drive setup is an acknowledged first-run choice.
-      // Persist it so the setup prompt cannot return on every launch.
+      // Persist it so Android does not ask the same question on every launch.
       if(info.connected && !info.startup_shown) info=await http('skip','POST');
       const label=document.getElementById('cloud-status-label');
       if(label){const base=info.mode==='oauth'?(info.synchronized?'Google Drive ile eşitlendi':info.status):info.authorization_ready?'Google hesabı doğrulandı · klasör seç':'Yerel çalışma';label.textContent=info.pending_changes?`${base} · ${info.pending_changes} değişiklik sırada`:base;}
@@ -70,7 +71,7 @@
         home(wasStartup);
       }
       lastChange=info.change_number;
-      if(!old && !info.startup_shown){
+      if(!old && !info.startup_shown && !info.connected){
         home(true);
         ROOT.setAttribute('data-startup','true');
       }
@@ -89,7 +90,7 @@
         home(ROOT.getAttribute('data-startup')==='true');
         message('Google bağlantısı tamamlanamadı: '+info.error,true);
       }
-      if(info.status.includes('alındı') && old && newest.change_number!==old.change_number && !document.getElementById('doc-editor')){
+      if((info.status.includes('alındı') || info.status.includes('indirildi')) && old && newest.change_number!==old.change_number && !document.getElementById('doc-editor')){
         // Reload only once per status revision, so a newly downloaded remote snapshot is rendered.
         const key=`atlas-cloud-refreshed-${newest.change_number}`;
         if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');location.reload();}
@@ -102,11 +103,10 @@
     if(busy)return;
     busy=true; if(button)button.disabled=true;
     try{
-      if(action==='close') {if(ROOT.getAttribute('data-startup')==='true') info=await http('skip','POST');ROOT.replaceChildren();view='closed';}
-      if(action==='skip') {info=await http('skip','POST'); ROOT.replaceChildren();view='closed';}
+      if(action==='close') {ROOT.replaceChildren();view='closed';}
+      if(action==='skip') {await http('skip','POST'); ROOT.replaceChildren();}
       if(action==='connect') {
         if(!info.configured){ message('Google bağlantısı bu paket içinde yapılandırılmamış.',true); return;}
-        if(ROOT.getAttribute('data-startup')==='true') info=await http('skip','POST');
         awaitingLogin=true;
         folderPrompted=false;
         info=await http('connect','POST');home();
@@ -114,10 +114,10 @@
       }
       if(action==='folders'){folderPrompted=true;folderStack=[{name:'Drive ana klasörü',id:'root'}];await folders();}
       if(action==='retry-folders'){await folders();}
-      if(action==='disconnect'){if(!confirm('Google Drive bağlantısı ayrılsın mı? Kaydedilmemiş yerel veriler silinmez.'))return;info=await http('disconnect','POST');home();}
+      if(action==='disconnect'){if(!confirm('Google Drive bağlantısı ayrılsın mı? Senkronizasyonu doğrulanan kayıtlar cihazdan kaldırılır. Yedeklenemeyen kayıtlar korunur.'))return;info=await http('disconnect','POST');home();location.reload();}
       if(action==='back') {if(folderStack.length>1)folderStack.pop();await folders();}
       if(action==='enter') {folderStack.push({id:button.dataset.id,name:button.dataset.label});await folders();}
-      if(action==='choose') {info=await http('select-folder','POST',{parent:folderStack.at(-1).id});info=await http('skip','POST');awaitingLogin=false;folderPrompted=true;home();message('Yedekleme konumu kaydedildi. Otomatik Drive yedeklemesi açık.')}
+      if(action==='choose') {info=await http('select-folder','POST',{parent:folderStack.at(-1).id});awaitingLogin=false;folderPrompted=true;home();message('Yedekleme konumu kaydedildi. Otomatik Drive yedeklemesi açık.')}
     }catch(e){message(e.message,true)}
     finally{busy=false;if(button?.isConnected)button.disabled=false;}
   }
@@ -140,3 +140,4 @@
   editHeartbeat();setInterval(editHeartbeat,3000);
   refresh();setInterval(refresh,1400);
 })();
+

@@ -361,7 +361,22 @@ public final class MainActivity extends ComponentActivity {
         }
     }
 
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && intent.getData() != null &&
+                "ylsyatlas".equals(intent.getData().getScheme())) {
+            AndroidBridge.stopOAuthNetworkSession();
+        }
+    }
+
     @Override public void onDestroy() {
+        if (isFinishing() && Python.isStarted()) {
+            new Thread(() -> {
+                try { Python.getInstance().getModule("mobile_entry").callAttr("stop_server"); }
+                catch (Exception ignored) { /* Unsynced local data remains available for the next launch. */ }
+            }, "AtlasWorkspaceCleanup").start();
+        }
         if (web != null) web.destroy();
         super.onDestroy();
     }

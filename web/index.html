@@ -40,6 +40,7 @@
     <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M9 7V4h6v3M3 13h18"/></symbol>
     <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 22V3m0 1c5-2 9 3 15 0v11c-6 3-10-2-15 0"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/><circle cx="12" cy="16" r="1"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.1 8.5 4.8 4.8 0 0 0 7 18Z"/><path d="M12 12v7m-3-3 3 3 3-3"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 3"/></symbol>
     <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8Z"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"/></symbol>
@@ -65,12 +66,12 @@
         <button class="nav-link" data-nav="applications" title="Başvurular"><svg><use href="#i-briefcase"/></svg><span>Başvurular</span><svg class="nav-trailing"><use href="#i-chevron"/></svg></button>
         <button class="nav-link" data-nav="documents" title="Belge Stüdyosu"><svg><use href="#i-file"/></svg><span>Belge Stüdyosu</span></button>
         <button class="nav-link" data-nav="ielts" title="IELTS ve Dil Gelişimi"><svg><use href="#i-language"/></svg><span>IELTS &amp; Dil Gelişimi</span><svg class="nav-trailing"><use href="#i-chevron"/></svg></button>
-        <button class="nav-link nav-link-child" data-nav="vocabulary" title="Kelime Defterim"><svg><use href="#i-book"/></svg><span>Kelime Defterim</span></button>
         <button class="nav-link" data-nav="calendar" title="Takvim ve Hatırlatmalar"><svg><use href="#i-calendar"/></svg><span>Takvim &amp; Hatırlatmalar</span></button>
         <button class="nav-link" data-nav="guide" title="MEB Rehberi"><svg><use href="#i-book"/></svg><span>MEB Rehberi (ABD)</span></button>
         <button class="nav-link" data-nav="administration" title="YLSY ve Pasaport"><svg><use href="#i-flag"/></svg><span>YLSY &amp; Pasaport</span></button>
         <button class="nav-link" data-act="open-rebus" title="REBUS (MEB)"><svg><use href="#i-external"/></svg><span>REBUS (MEB)</span></button>
         <div class="nav-separator"></div>
+        <button class="nav-link" data-nav="eligibility" title="YLSY Uygunluk Kontrolü"><svg><use href="#i-check"/></svg><span>YLSY Uygunluk Kontrolü</span></button>
         <button class="nav-link" data-nav="notes" title="Notlar"><svg><use href="#i-file"/></svg><span>Notlar</span></button>
         <button class="nav-link" data-nav="resources" title="Kaynaklar ve Yayınlar"><svg><use href="#i-book"/></svg><span>Kaynaklar &amp; Yayınlar</span></button>
         <button class="nav-link" data-nav="files" title="Dosya Kasası"><svg><use href="#i-paperclip"/></svg><span>Dosya Kasası</span></button>
@@ -81,8 +82,7 @@
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     <div class="right-shell">
       <header class="topbar">
-        <button class="icon-button mobile-menu" id="mobile-menu" title="Menüyü aç"><svg><use href="#i-menu"/></svg></button>
-        <div class="topbar-brand" aria-label="Uygulama açıklaması"><span>YLSY Bursiyerleri için Başvuru ve Hazırlık Platformu</span></div>
+        <div class="topbar-brand" aria-label="YLSY Atlas"><img src="/app-icon.png" alt=""/><span>YLSY Atlas</span></div>
         <div class="breadcrumb" id="breadcrumbs" aria-hidden="true"></div>
         
         <div class="topbar-spacer"></div>
@@ -104,6 +104,7 @@
   </footer>
   <div id="toast-container" aria-live="polite"></div>
   <div id="modal-root"></div>
+  <div id="picker-root"></div>
   <div id="search-root"></div>
   <div id="account-root"></div>
   <input type="file" id="hidden-file" hidden/>

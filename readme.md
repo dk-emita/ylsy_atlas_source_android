@@ -1,7 +1,4 @@
-# YLSY Atlas v4.0.0 — Android kaynak kodu
+# YLSY Atlas Android 4.0.0
 
-Android uygulamasının kaynak kodudur. Kurulum dosyaları [YLSY Atlas sürüm deposunda](https://github.com/dk-emita/ylsy_atlas) yayımlanır.
+Android Studio project and APK for the phone release. The same Python/SQLite backend and local queue power Google Drive sync; Android uses the native Keystore for OAuth credentials. Build project: `android-app`. APK build output is generated as `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Google Drive geliştirme ayarı
-
-Kişisel OAuth istemci kimlikleri ve sırları bu depodan çıkarılmıştır. Örnek yapılandırma dosyalarındaki `YOUR_...` alanlarını kendi Google Cloud OAuth istemcinizle değiştirip dosyaları `.json.example` uzantısından `.json` uzantısına kopyalayın. Android modülündeki `android-app/app/src/main/python/resources/` dizininde de örnekler bulunur. Gerçek kimlik bilgilerini Git'e göndermeyin.

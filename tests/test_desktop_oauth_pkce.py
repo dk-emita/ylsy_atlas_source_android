@@ -2,6 +2,8 @@
 import base64
 import hashlib
 import json
+import socket
+import time
 from pathlib import Path
 import sys
 import threading
@@ -44,6 +46,7 @@ class FakeResponse:
     def json(self):return {'access_token':'fake-access','refresh_token':'fake-refresh','expires_in':3600}
 
 chosen=[]
+idle_connections=[]
 expected_client_secret=None
 def fake_browser(url, new=0):
     parsed=urllib.parse.urlparse(url)
@@ -54,6 +57,8 @@ def fake_browser(url, new=0):
     assert query['prompt']==['select_account consent']
     assert query['access_type']==['offline']
     chosen.append(query)
+    redirect=urllib.parse.urlparse(query['redirect_uri'][0])
+    idle_connections.append(socket.create_connection((redirect.hostname,redirect.port),timeout=3))
     def callback():
         redirect=query['redirect_uri'][0]
         assert urllib.parse.urlparse(redirect).path==''
@@ -82,7 +87,10 @@ with patch.dict(sys.modules,modules):
     auth=GoogleAuth(Path(__file__).resolve().parents[1]/'resources/google_oauth_client.json',secret_store=store)
     expected_client_secret=auth.client_secret
     with patch('webbrowser.open',side_effect=fake_browser),patch('requests.post',side_effect=fake_post):
+        started=time.monotonic()
         creds=auth.authorize(interactive=True,force_account_choice=True)
+        assert time.monotonic()-started < 3, 'An idle browser connection blocked OAuth callback'
+        idle_connections.pop().close()
         assert creds.valid and creds.refresh_token=='fake-refresh'
     assert len(chosen)==1
     assert store.get_password(OAUTH_SERVICE,auth.client_id)
@@ -95,6 +103,7 @@ with patch.dict(sys.modules,modules):
     expected_client_secret=auth.client_secret
     with patch('webbrowser.open',side_effect=fake_browser),patch('requests.post',side_effect=fake_post):
         creds=auth.authorize(interactive=True,force_account_choice=True)
+        idle_connections.pop().close()
         assert creds.client_secret==expected_client_secret
     assert len(chosen)==2
 print('PASS: Desktop OAuth PKCE, callback, optional client secret, token vault, reconnect, logout')

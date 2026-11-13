@@ -49,5 +49,6 @@ with tempfile.TemporaryDirectory() as directory:
     cloud._remote = lambda: ({'id': 'remote-id', 'md5Checksum': cloud.last_remote}, None, Drive())
     cloud.close()
     assert cloud.purge_verified_local_data()
-    assert not client.db_path.exists() and cloud.config['local_purged']
+    assert cloud.config['local_purged']
+    assert client.all('vocabulary') == [] and client.all('universities') == []
 print('PASS: cloud merge, verified local cleanup')
