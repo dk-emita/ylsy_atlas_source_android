@@ -58,6 +58,9 @@
       const newest=await http('status');
       const old=info;
       info=newest;
+      // A completed Drive setup is an acknowledged first-run choice.
+      // Persist it so the setup prompt cannot return on every launch.
+      if(info.connected && !info.startup_shown) info=await http('skip','POST');
       const label=document.getElementById('cloud-status-label');
       if(label){const base=info.mode==='oauth'?(info.synchronized?'Google Drive ile eşitlendi':info.status):info.authorization_ready?'Google hesabı doğrulandı · klasör seç':'Yerel çalışma';label.textContent=info.pending_changes?`${base} · ${info.pending_changes} değişiklik sırada`:base;}
       const profile=document.getElementById('profile-button');
@@ -99,10 +102,11 @@
     if(busy)return;
     busy=true; if(button)button.disabled=true;
     try{
-      if(action==='close') {ROOT.replaceChildren();view='closed';}
-      if(action==='skip') {await http('skip','POST'); ROOT.replaceChildren();}
+      if(action==='close') {if(ROOT.getAttribute('data-startup')==='true') info=await http('skip','POST');ROOT.replaceChildren();view='closed';}
+      if(action==='skip') {info=await http('skip','POST'); ROOT.replaceChildren();view='closed';}
       if(action==='connect') {
         if(!info.configured){ message('Google bağlantısı bu paket içinde yapılandırılmamış.',true); return;}
+        if(ROOT.getAttribute('data-startup')==='true') info=await http('skip','POST');
         awaitingLogin=true;
         folderPrompted=false;
         info=await http('connect','POST');home();
@@ -113,7 +117,7 @@
       if(action==='disconnect'){if(!confirm('Google Drive bağlantısı ayrılsın mı? Kaydedilmemiş yerel veriler silinmez.'))return;info=await http('disconnect','POST');home();}
       if(action==='back') {if(folderStack.length>1)folderStack.pop();await folders();}
       if(action==='enter') {folderStack.push({id:button.dataset.id,name:button.dataset.label});await folders();}
-      if(action==='choose') {info=await http('select-folder','POST',{parent:folderStack.at(-1).id});awaitingLogin=false;folderPrompted=true;home();message('Yedekleme konumu kaydedildi. Otomatik Drive yedeklemesi açık.')}
+      if(action==='choose') {info=await http('select-folder','POST',{parent:folderStack.at(-1).id});info=await http('skip','POST');awaitingLogin=false;folderPrompted=true;home();message('Yedekleme konumu kaydedildi. Otomatik Drive yedeklemesi açık.')}
     }catch(e){message(e.message,true)}
     finally{busy=false;if(button?.isConnected)button.disabled=false;}
   }
